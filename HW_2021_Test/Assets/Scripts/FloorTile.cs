@@ -7,6 +7,7 @@ using System;
 [RequireComponent(typeof(Animator))]
 public class FloorTile : MonoBehaviour
 {
+    public static Action OnTileDestroyed;
     public TextMeshPro timer;
     private float _initialTimer;
     public float initialTimer
@@ -32,6 +33,7 @@ public class FloorTile : MonoBehaviour
 
     [SerializeField] Animator tileAnimController;
     bool isAlive = false;
+    bool isTileVisited = false;
 
     private void Awake()
     {
@@ -48,10 +50,15 @@ public class FloorTile : MonoBehaviour
         TickTimer.OnUpdateTick -= UpdateTime;
     }
 
+    /// <summary>
+    /// Set the timer of the tile.
+    /// </summary>
+    /// <param name="value"></param>
     internal void SetTimer(float value)
     {
         initialTimer = value;
         isAlive = true;
+        isTileVisited = false;
     }
 
     private void UpdateTime(object sender, TickTimer.OnTickEventArgs onTick)
@@ -69,14 +76,23 @@ public class FloorTile : MonoBehaviour
             initialTimer = 0; //Resetting the timer to zero.
 
             //Destroy the tile.
-            Debug.Log("Destroying the tile");
             tileAnimController.SetTrigger("tDestroy");
         }
     }
 
     public void DestroyTile()
     {
-        Debug.Log("Tile destroyed");
+        OnTileDestroyed?.Invoke();
         Destroy(this.gameObject);
+    }
+
+    private void OnCollisionEnter(Collision other)
+    {
+        if (other.gameObject.tag == "Player" && !isTileVisited)
+        {
+            //Increase the score.
+            Debug.Log("Increase Score");
+            GameManager.playerScore++;
+        }
     }
 }
