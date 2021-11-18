@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    public GameObject playerPrefab;
     public float speed;
 
     private void Start()
@@ -28,6 +29,6 @@ public class PlayerController : MonoBehaviour
 
         Vector3 dir = new Vector3(hori, 0, vert).normalized;
 
-        transform.position += dir * speed * tick._ticks; 
+        transform.position += dir * speed * tick._ticks;
     }
 }

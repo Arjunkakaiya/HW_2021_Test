@@ -16,21 +16,26 @@ public class FloorManager : MonoBehaviour
 
     private void OnEnable()
     {
+        UIManager.OnStartGame += OnGameStart;
         TickTimer.OnUpdateTick += OnUpdateTimer;
         FloorTile.OnTileDestroyed += OnTileDestroyed;
+        Pit.OnGameover += OnGameover;
     }
 
     private void OnDisable()
     {
+        UIManager.OnStartGame -= OnGameStart;
         TickTimer.OnUpdateTick -= OnUpdateTimer;
         FloorTile.OnTileDestroyed -= OnTileDestroyed;
+        Pit.OnGameover -= OnGameover;
     }
 
     /// <summary>
     /// To initial values and spawn first tile object.
     /// </summary>
-    void Start()
+    void OnGameStart()
     {
+        
         previousSpawnPos = initialRotation;
         // Spawning the first tile.
         SpawnFloorTile(initialPosition);
@@ -49,6 +54,8 @@ public class FloorManager : MonoBehaviour
     /// </summary>  
     void SpawnFloorTile(Vector3 pos)
     {
+        Debug.LogError($"Spawnning count: {spawnCount}");
+        spawnCount++;
         // Instantiate and set the parent of the floor tile.
         FloorTile tile = Instantiate(floor_Prefab, pos, Quaternion.identity);
         tile.transform.SetParent(parent);
@@ -58,7 +65,6 @@ public class FloorManager : MonoBehaviour
         // Set the tile life span.
         tile.SetTimer(tileTime);
 
-        spawnCount++;
     }
 
     /// <summary>
@@ -68,6 +74,8 @@ public class FloorManager : MonoBehaviour
     /// <param name="timer">Class with time.deltatime value</param>
     private void OnUpdateTimer(object sender, TickTimer.OnTickEventArgs timer)
     {
+        if(tileTime <= 0) return;
+
         tileTime -= timer._ticks;
 
         if (tileTime <= GameManager.nextSpawnTime)
@@ -80,6 +88,7 @@ public class FloorManager : MonoBehaviour
     IEnumerator SpawnFloorTile()
     {
         yield return new WaitUntil(() => spawnCount == 1);
+        Debug.Log(tileTime);
         // Get next direction and spawning the tile.
         Direction nextDir = GetNextSpawningDirection();
     dir:
@@ -128,6 +137,22 @@ public class FloorManager : MonoBehaviour
             case Direction.Top: return new Vector3(0, 0, 9);
             case Direction.Bottom:
             default: return new Vector3(0, 0, -9);
+        }
+    }
+
+    /// <summary>
+    /// Event called when gameover happens
+    /// </summary>
+    private void OnGameover()
+    {
+        //resetting the values
+        spawnCount = 0;
+        tileTime = 0;
+
+        //Destroy the floor objects.
+        foreach (Transform item in parent)
+        {
+            Destroy(item.gameObject);
         }
     }
 }

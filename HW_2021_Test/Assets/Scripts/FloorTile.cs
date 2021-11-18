@@ -8,6 +8,7 @@ using System;
 public class FloorTile : MonoBehaviour
 {
     public static Action OnTileDestroyed;
+    public static Action OnScoreUpdate;
     public TextMeshPro timer;
     private float _initialTimer;
     public float initialTimer
@@ -33,7 +34,7 @@ public class FloorTile : MonoBehaviour
 
     [SerializeField] Animator tileAnimController;
     bool isAlive = false;
-    bool isTileVisited = false;
+    [SerializeField] bool isTileVisited = false;
 
     private void Awake()
     {
@@ -91,8 +92,8 @@ public class FloorTile : MonoBehaviour
         if (other.gameObject.tag == "Player" && !isTileVisited)
         {
             //Increase the score.
-            Debug.Log("Increase Score");
-            GameManager.playerScore++;
+            isTileVisited = true;
+            OnScoreUpdate?.Invoke();
         }
     }
 }
